@@ -1,6 +1,5 @@
 package com.bgauction.gameservice.model.dto;
 
-import com.bgauction.gameservice.model.entity.GameImage;
 import com.bgauction.gameservice.model.entity.GameLanguage;
 import com.bgauction.gameservice.model.entity.GameStatus;
 import jakarta.persistence.EnumType;
@@ -34,7 +33,7 @@ public class GameDto {
     private String description;
 
     @NotBlank
-    @Size(min = 5)
+    @Size(min = 3)
     private String condition;
 
     @NotNull

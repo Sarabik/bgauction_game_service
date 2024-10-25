@@ -41,16 +41,17 @@ public class GameServiceImpl implements GameService {
     @Override
     public void updateGame(Game game) {
         Long id = game.getId();
-        if (id != null && gameRepository.existsById(id)) {
-            Game existingGame = gameRepository.findById(id).orElseThrow(() ->
-                    new RuntimeException("Game with ID " + id + " does not exist"));
-            game.setStatus(existingGame.getStatus());
-            updateGameImages(existingGame, game);
-
-            gameRepository.save(game);
-        } else {
+        Optional<Game> optional = gameRepository.findById(id);
+        if (optional.isEmpty()) {
             throw new RuntimeException("Game with ID " + game.getId() + " does not exist");
         }
+        Game existingGame = optional.get();
+        if (existingGame.getStatus() != GameStatus.PUBLISHED) {
+            throw new RuntimeException("Game with ID " + game.getId() + " can't be updated because game status is not PUBLISHED");
+        }
+        game.setStatus(existingGame.getStatus());
+        updateGameImages(existingGame, game);
+        gameRepository.save(game);
     }
 
     private void updateGameImages(Game existingGame, Game newGame) {
@@ -68,6 +69,32 @@ public class GameServiceImpl implements GameService {
         newImages.addAll(oldImages);
         newImages.forEach(i -> i.setGame(newGame));
         log.info("newImages updated: {}", newImages.stream().map(i -> i.getUrl()).toList());
+    }
+
+    @Override
+    public void setStatusToInAuctionForGameWithId(Long id) {
+        changeGameStatus(id, GameStatus.IN_AUCTION);
+    }
+
+    @Override
+    public void setStatusToSoldForGameWithId(Long id) {
+        changeGameStatus(id, GameStatus.SOLD);
+    }
+
+    @Override
+    public void setStatusToPublishedForGameWithId(Long id) {
+        changeGameStatus(id, GameStatus.PUBLISHED);
+    }
+
+    private void changeGameStatus(Long id, GameStatus status) {
+        Optional<Game> optional = gameRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new RuntimeException("Game with ID " + id + " does not exist");
+        } else {
+            Game game = optional.get();
+            game.setStatus(status);
+            gameRepository.save(game);
+        }
     }
 
     @Override

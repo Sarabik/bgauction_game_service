@@ -46,7 +46,7 @@ public class Game {
 
     @NotNull
     @Positive
-    @Column(name = "user_id")
+    @Column(name = "user_id", updatable = false)
     private Long userId;
 
     @NotBlank
@@ -60,7 +60,7 @@ public class Game {
     private String description;
 
     @NotBlank
-    @Size(min = 5)
+    @Size(min = 3)
     @Column(name = "game_condition")
     private String condition;
 

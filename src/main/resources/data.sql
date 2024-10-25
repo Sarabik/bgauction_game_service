@@ -1,8 +1,8 @@
 INSERT INTO games (user_id, title, description, game_condition, language, min_players, max_players, status, created)
 VALUES
-(1, 'Catan', 'A strategy game for resource management and trading.', 'good', 'EN', 3, 4, 'PUBLISHED', CURRENT_TIMESTAMP),
+(1, 'Catan', 'A strategy game for resource management and trading.', 'good', 'EN', 3, 4, 'IN_AUCTION', CURRENT_TIMESTAMP),
 (1, 'Ticket to Ride', 'A railway adventure game', 'excellent', 'RU', 2, 5, 'PUBLISHED', CURRENT_TIMESTAMP),
-(2, 'Pandemic', 'A cooperative board game to stop a global outbreak', 'new', 'EN', 2, 4, 'PUBLISHED', CURRENT_TIMESTAMP),
+(2, 'Pandemic', 'A cooperative board game to stop a global outbreak', 'new', 'EN', 2, 4, 'IN_AUCTION', CURRENT_TIMESTAMP),
 (2, 'Carcassonne', 'A tile-based strategy game about building cities', 'like new', 'LV', 2, 5, 'PUBLISHED', CURRENT_TIMESTAMP);
 
 INSERT INTO game_images (url, game_id)

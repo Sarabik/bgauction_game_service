@@ -1,7 +1,6 @@
 package com.bgauction.gameservice.controller;
 
 import com.bgauction.gameservice.model.dto.GameDto;
-import com.bgauction.gameservice.model.entity.Game;
 import com.bgauction.gameservice.model.mapper.GameMapper;
 import com.bgauction.gameservice.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -57,14 +56,52 @@ public class GameController {
         if (id == null || id < 1 || !id.equals(game.getId())) {
             return new ResponseEntity<>("Id must be null", HttpStatus.BAD_REQUEST);
         }
-        gameService.updateGame(gameMapper.gameDtoToGame(game));
-        return ResponseEntity.noContent().build();
+        try {
+            gameService.updateGame(gameMapper.gameDtoToGame(game));
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/{id}/in_auction")
+    public ResponseEntity<?> setStatusToInAuctionForGameWithId(@PathVariable Long id) {
+        try {
+            gameService.setStatusToInAuctionForGameWithId(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/{id}/sold")
+    public ResponseEntity<?> setStatusToSoldForGameWithId(@PathVariable Long id) {
+        try {
+            gameService.setStatusToSoldForGameWithId(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/{id}/published")
+    public ResponseEntity<?> setStatusToPublishedForGameWithId(@PathVariable Long id) {
+        try {
+            gameService.setStatusToPublishedForGameWithId(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteGame(@PathVariable Long id) {
-        gameService.deleteGameById(id);
-        return ResponseEntity.noContent().build();
+        try {
+            gameService.deleteGameById(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/user/{userId}")

@@ -9,6 +9,9 @@ public interface GameService {
     Optional<Game> findGameById(Long id);
     List<Game> findGameListByUserId(Long userId);
     Game saveGame(Game game);
+    void setStatusToInAuctionForGameWithId(Long id);
+    void setStatusToSoldForGameWithId(Long id);
+    void setStatusToPublishedForGameWithId(Long id);
     void updateGame(Game game);
     void deleteGameById(Long id);
     void deleteAllGamesByUserId(Long user_id);
