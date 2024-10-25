@@ -1,5 +1,7 @@
 package com.bgauction.gameservice.controller;
 
+import com.bgauction.gameservice.exception.BadRequestException;
+import com.bgauction.gameservice.exception.NotFoundException;
 import com.bgauction.gameservice.model.dto.GameDto;
 import com.bgauction.gameservice.model.mapper.GameMapper;
 import com.bgauction.gameservice.service.GameService;
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,16 +26,29 @@ public class GameController {
 
     private final GameService gameService;
     private final GameMapper gameMapper;
+    private static final String GAME_ID_GREATER_THEN_0 = "Game id: %d must be greater then 0";
+    private static final String GAME_ID_MUST_BE_NULL = "Game id: %d must be null or 0";
+    private static final String USER_ID_GREATER_THEN_0 = "User id: %d must be greater then 0";
+    private static final String IMAGE_ID_MUST_BE_NULL = "Image ids for new game must be null or 0";
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getGameById(@PathVariable Long id) {
-        Optional<GameDto> gameDto = gameService.findGameById(id).map(gameMapper::gameToGameDto);
-        return gameDto.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        if (id < 1) {
+            return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            GameDto gameDto = gameMapper.gameToGameDto(gameService.findGameById(id));
+            return new ResponseEntity<>(gameDto, HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<GameDto>> getGamesByUserId(@PathVariable Long userId) {
+    public ResponseEntity<?> getGamesByUserId(@PathVariable Long userId) {
+        if (userId < 1) {
+            return new ResponseEntity<>(String.format(USER_ID_GREATER_THEN_0, userId), HttpStatus.BAD_REQUEST);
+        }
         List<GameDto> games = gameService.findGameListByUserId(userId).stream().map(gameMapper::gameToGameDto).toList();
         return ResponseEntity.ok(games);
     }
@@ -42,10 +56,10 @@ public class GameController {
     @PostMapping
     public ResponseEntity<?> createGame(@RequestBody GameDto gameDto) {
         if (gameDto.getId() != null) {
-            return new ResponseEntity<>("Id must be null", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(String.format(GAME_ID_MUST_BE_NULL, gameDto.getId()), HttpStatus.BAD_REQUEST);
         }
         if (gameDto.getImages() != null && !gameDto.getImages().stream().allMatch(image -> image.getId() == null)) {
-            return new ResponseEntity<>("Image ids must be null", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(IMAGE_ID_MUST_BE_NULL, HttpStatus.BAD_REQUEST);
         }
         GameDto savedGame = gameMapper.gameToGameDto(gameService.saveGame(gameMapper.gameDtoToGame(gameDto)));
         return ResponseEntity.status(HttpStatus.CREATED).body(savedGame);
@@ -54,43 +68,54 @@ public class GameController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateGame(@PathVariable Long id, @RequestBody GameDto game) {
         if (id == null || id < 1 || !id.equals(game.getId())) {
-            return new ResponseEntity<>("Id must be null", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(String.format(GAME_ID_MUST_BE_NULL, id), HttpStatus.BAD_REQUEST);
         }
         try {
             gameService.updateGame(gameMapper.gameDtoToGame(game));
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PutMapping("/{id}/in_auction")
     public ResponseEntity<?> setStatusToInAuctionForGameWithId(@PathVariable Long id) {
+        if (id < 1) {
+            return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
+        }
         try {
             gameService.setStatusToInAuctionForGameWithId(id);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     @PutMapping("/{id}/sold")
     public ResponseEntity<?> setStatusToSoldForGameWithId(@PathVariable Long id) {
+        if (id < 1) {
+            return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
+        }
         try {
             gameService.setStatusToSoldForGameWithId(id);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     @PutMapping("/{id}/published")
     public ResponseEntity<?> setStatusToPublishedForGameWithId(@PathVariable Long id) {
+        if (id < 1) {
+            return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
+        }
         try {
             gameService.setStatusToPublishedForGameWithId(id);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.noContent().build();
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -99,13 +124,16 @@ public class GameController {
         try {
             gameService.deleteGameById(id);
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping("/user/{userId}")
     public ResponseEntity<?> deleteAllGamesByUserId(@PathVariable Long userId) {
+        if (userId < 1) {
+            return new ResponseEntity<>(String.format(USER_ID_GREATER_THEN_0, userId), HttpStatus.BAD_REQUEST);
+        }
         gameService.deleteAllGamesByUserId(userId);
         return ResponseEntity.noContent().build();
     }

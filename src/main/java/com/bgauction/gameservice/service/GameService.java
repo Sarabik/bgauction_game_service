@@ -3,10 +3,9 @@ package com.bgauction.gameservice.service;
 import com.bgauction.gameservice.model.entity.Game;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface GameService {
-    Optional<Game> findGameById(Long id);
+    Game findGameById(Long id);
     List<Game> findGameListByUserId(Long userId);
     Game saveGame(Game game);
     void setStatusToInAuctionForGameWithId(Long id);
