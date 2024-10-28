@@ -101,13 +101,4 @@ public class GameController {
         gameService.deleteGameById(id);
         return ResponseEntity.noContent().build();
     }
-
-    @DeleteMapping("/user/{userId}")
-    public ResponseEntity<?> deleteAllGamesByUserId(@PathVariable Long userId) {
-        if (userId < 1) {
-            return new ResponseEntity<>(String.format(USER_ID_GREATER_THEN_0, userId), HttpStatus.BAD_REQUEST);
-        }
-        gameService.deleteAllGamesByUserId(userId);
-        return ResponseEntity.noContent().build();
-    }
 }

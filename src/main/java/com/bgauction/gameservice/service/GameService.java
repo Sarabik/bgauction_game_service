@@ -13,5 +13,4 @@ public interface GameService {
     void setStatusToPublishedForGameWithId(Long id);
     void updateGame(Game game);
     void deleteGameById(Long id);
-    void deleteAllGamesByUserId(Long user_id);
 }

@@ -97,9 +97,4 @@ public class GameServiceImpl implements GameService {
         }
         gameRepository.deleteById(id);
     }
-
-    @Override
-    public void deleteAllGamesByUserId(Long userId) {
-        gameRepository.deleteAllByUserId(userId);
-    }
 }
