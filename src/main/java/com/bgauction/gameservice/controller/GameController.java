@@ -13,24 +13,25 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/game")
 public class GameController {
 
     private final GameService gameService;
     private final GameMapper gameMapper;
+
     private static final String GAME_ID_GREATER_THEN_0 = "Game id: %d must be greater then 0";
     private static final String GAME_ID_MUST_BE_NULL = "Game id: %d must be null or 0";
+    private static final String GAME_ID_MUST_EQUAL_TO_PATH_VARIABLE = "Game id: %d must be equal to path variable: %d";
     private static final String USER_ID_GREATER_THEN_0 = "User id: %d must be greater then 0";
     private static final String IMAGE_ID_MUST_BE_NULL = "Image ids for new game must be null or 0";
 
-    @GetMapping("/{id}")
+    @GetMapping({"/game/{id}", "/internal/game/{id}"})
     public ResponseEntity<?> getGameById(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
@@ -39,37 +40,52 @@ public class GameController {
         return new ResponseEntity<>(gameDto, HttpStatus.OK);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getGamesByUserId(@PathVariable Long userId) {
+    @GetMapping("/game/user/{userId}")
+    public ResponseEntity<?> getGamesByUserId(@PathVariable Long userId,
+                                              @RequestHeader(value = "X-User-Id") Long id) {
         if (userId < 1) {
             return new ResponseEntity<>(String.format(USER_ID_GREATER_THEN_0, userId), HttpStatus.BAD_REQUEST);
+        }
+        if (!id.equals(userId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         List<GameDto> games = gameService.findGameListByUserId(userId).stream().map(gameMapper::gameToGameDto).toList();
         return ResponseEntity.ok(games);
     }
 
-    @PostMapping
-    public ResponseEntity<?> createGame(@Valid @RequestBody GameDto gameDto) {
+    @PostMapping("/game")
+    public ResponseEntity<?> createGame(@Valid @RequestBody GameDto gameDto,
+                                        @RequestHeader(value = "X-User-Id") Long id) {
         if (gameDto.getId() != null) {
             return new ResponseEntity<>(String.format(GAME_ID_MUST_BE_NULL, gameDto.getId()), HttpStatus.BAD_REQUEST);
         }
         if (gameDto.getImages() != null && !gameDto.getImages().stream().allMatch(image -> image.getId() == null)) {
             return new ResponseEntity<>(IMAGE_ID_MUST_BE_NULL, HttpStatus.BAD_REQUEST);
         }
+        if (!id.equals(gameDto.getUserId())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         GameDto savedGame = gameMapper.gameToGameDto(gameService.saveGame(gameMapper.gameDtoToGame(gameDto)));
         return ResponseEntity.status(HttpStatus.CREATED).body(savedGame);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateGame(@PathVariable Long id, @Valid @RequestBody GameDto game) {
-        if (id == null || id < 1 || !id.equals(game.getId())) {
-            return new ResponseEntity<>(String.format(GAME_ID_MUST_BE_NULL, id), HttpStatus.BAD_REQUEST);
+    @PutMapping("/game/{id}")
+    public ResponseEntity<?> updateGame(@PathVariable Long id, @Valid @RequestBody GameDto game,
+                                        @RequestHeader(value = "X-User-Id") Long userId) {
+        if (!id.equals(game.getId())) {
+            return new ResponseEntity<>(String.format(GAME_ID_MUST_EQUAL_TO_PATH_VARIABLE, game.getId(), id), HttpStatus.BAD_REQUEST);
+        }
+        if (id < 1) {
+            return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
+        }
+        if (!userId.equals(game.getUserId())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         gameService.updateGame(gameMapper.gameDtoToGame(game));
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/in_auction")
+    @PutMapping("/internal/game/{id}/in_auction")
     public ResponseEntity<?> setStatusToInAuctionForGameWithId(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
@@ -78,7 +94,7 @@ public class GameController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/sold")
+    @PutMapping("/internal/game/{id}/sold")
     public ResponseEntity<?> setStatusToSoldForGameWithId(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
@@ -87,7 +103,7 @@ public class GameController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/published")
+    @PutMapping("/internal/game/{id}/published")
     public ResponseEntity<?> setStatusToPublishedForGameWithId(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
@@ -96,7 +112,7 @@ public class GameController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/internal/game/{id}")
     public ResponseEntity<?> deleteGame(@PathVariable Long id) {
         gameService.deleteGameById(id);
         return ResponseEntity.noContent().build();
