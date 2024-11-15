@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,8 +56,12 @@ public class GameController {
 
     @PostMapping("/game")
     public ResponseEntity<?> createGame(@Valid @RequestBody GameDto gameDto,
+                                        BindingResult bindingResult,
                                         @RequestHeader(value = "X-User-Id") Long id) {
-        if (gameDto.getId() != null) {
+        if (bindingResult.hasErrors()) {
+            return getValidationErrors(bindingResult);
+        }
+        if (gameDto.getId() != null && gameDto.getId() != 0) {
             return new ResponseEntity<>(String.format(GAME_ID_MUST_BE_NULL, gameDto.getId()), HttpStatus.BAD_REQUEST);
         }
         if (gameDto.getImages() != null && !gameDto.getImages().stream().allMatch(image -> image.getId() == null)) {
@@ -70,8 +75,13 @@ public class GameController {
     }
 
     @PutMapping("/game/{id}")
-    public ResponseEntity<?> updateGame(@PathVariable Long id, @Valid @RequestBody GameDto game,
+    public ResponseEntity<?> updateGame(@PathVariable Long id,
+                                        @Valid @RequestBody GameDto game,
+                                        BindingResult bindingResult,
                                         @RequestHeader(value = "X-User-Id") Long userId) {
+        if (bindingResult.hasErrors()) {
+            return getValidationErrors(bindingResult);
+        }
         if (!id.equals(game.getId())) {
             return new ResponseEntity<>(String.format(GAME_ID_MUST_EQUAL_TO_PATH_VARIABLE, game.getId(), id), HttpStatus.BAD_REQUEST);
         }
@@ -116,5 +126,12 @@ public class GameController {
     public ResponseEntity<?> deleteGame(@PathVariable Long id) {
         gameService.deleteGameById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private ResponseEntity<?> getValidationErrors(BindingResult bindingResult) {
+            List<String> errors = bindingResult.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .toList();
+            return ResponseEntity.badRequest().body(errors);
     }
 }

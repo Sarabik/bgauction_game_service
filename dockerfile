@@ -14,4 +14,4 @@ FROM openjdk:17-slim
 EXPOSE 8100
 ENV SPRING_PROFILES_ACTIVE=docker
 COPY --from=build /home/app/build/libs/*.jar app.jar
-ENTRYPOINT [ "sh", "-c", "java -jar /app.jar" ]
+ENTRYPOINT [ "sh", "-c", "java -jar /app.jar --spring.profiles.active=docker" ]

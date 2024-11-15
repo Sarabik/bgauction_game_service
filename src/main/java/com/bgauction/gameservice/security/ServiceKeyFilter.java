@@ -26,7 +26,13 @@ public class ServiceKeyFilter extends OncePerRequestFilter {
         String serviceKey = request.getHeader("X-Service-Key");
 
         if (serviceKey == null || !serviceKey.equals(serviceInternalKey)) {
-            response.sendError(HttpStatus.FORBIDDEN.value(), "Invalid Service Key");
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            String jsonResponse = "Missing or invalid required header: X-User-Id";
+            response.getWriter().write(jsonResponse);
+            response.getWriter().flush();
             return;
         }
 
