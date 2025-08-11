@@ -13,5 +13,5 @@ RUN gradle clean build -x test
 FROM openjdk:17-slim
 EXPOSE 8100
 ENV SPRING_PROFILES_ACTIVE=docker
-COPY --from=build /home/app/build/libs/*.jar app.jar
+COPY --from=build /home/app/build/libs/gameservice-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT [ "sh", "-c", "java -jar /app.jar --spring.profiles.active=docker" ]

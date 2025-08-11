@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @ActiveProfiles("test")
-public class GameControllerIntegrationTests {
+class GameControllerIntegrationTests {
 
     @Value("${service.internal-key}")
     private String serviceInternalKey;
@@ -195,7 +195,8 @@ public class GameControllerIntegrationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Service-Key", serviceInternalKey))
                 .andExpect(status().isNoContent());
-        assertThatThrownBy(() -> gameService.findGameById(savedGameDto.getId()))
+        Long id = savedGameDto.getId();
+        assertThatThrownBy(() -> gameService.findGameById(id))
                 .isInstanceOf(NotFoundException.class);
     }
 

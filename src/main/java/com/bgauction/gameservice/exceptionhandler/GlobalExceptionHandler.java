@@ -1,4 +1,4 @@
-package com.bgauction.gameservice.exceptionHandler;
+package com.bgauction.gameservice.exceptionhandler;
 
 import com.bgauction.gameservice.exception.BadRequestException;
 import com.bgauction.gameservice.exception.NotFoundException;

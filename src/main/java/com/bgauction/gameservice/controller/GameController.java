@@ -33,7 +33,7 @@ public class GameController {
     private static final String IMAGE_ID_MUST_BE_NULL = "Image ids for new game must be null or 0";
 
     @GetMapping({"/game/{id}", "/internal/game/{id}"})
-    public ResponseEntity<?> getGameById(@PathVariable Long id) {
+    public ResponseEntity<Object> getGameById(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
         }
@@ -42,7 +42,7 @@ public class GameController {
     }
 
     @GetMapping("/game/user/{userId}")
-    public ResponseEntity<?> getGamesByUserId(@PathVariable Long userId,
+    public ResponseEntity<Object> getGamesByUserId(@PathVariable Long userId,
                                               @RequestHeader(value = "X-User-Id") Long id) {
         if (userId < 1) {
             return new ResponseEntity<>(String.format(USER_ID_GREATER_THEN_0, userId), HttpStatus.BAD_REQUEST);
@@ -55,7 +55,7 @@ public class GameController {
     }
 
     @PostMapping("/game")
-    public ResponseEntity<?> createGame(@Valid @RequestBody GameDto gameDto,
+    public ResponseEntity<Object> createGame(@Valid @RequestBody GameDto gameDto,
                                         BindingResult bindingResult,
                                         @RequestHeader(value = "X-User-Id") Long id) {
         if (bindingResult.hasErrors()) {
@@ -75,7 +75,7 @@ public class GameController {
     }
 
     @PutMapping("/game/{id}")
-    public ResponseEntity<?> updateGame(@PathVariable Long id,
+    public ResponseEntity<Object> updateGame(@PathVariable Long id,
                                         @Valid @RequestBody GameDto game,
                                         BindingResult bindingResult,
                                         @RequestHeader(value = "X-User-Id") Long userId) {
@@ -96,7 +96,7 @@ public class GameController {
     }
 
     @PutMapping("/internal/game/{id}/in_auction")
-    public ResponseEntity<?> setStatusToInAuctionForGameWithId(@PathVariable Long id) {
+    public ResponseEntity<Object> setStatusToInAuctionForGameWithId(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
         }
@@ -105,7 +105,7 @@ public class GameController {
     }
 
     @PutMapping("/internal/game/{id}/sold")
-    public ResponseEntity<?> setStatusToSoldForGameWithId(@PathVariable Long id) {
+    public ResponseEntity<Object> setStatusToSoldForGameWithId(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
         }
@@ -114,7 +114,7 @@ public class GameController {
     }
 
     @PutMapping("/internal/game/{id}/published")
-    public ResponseEntity<?> setStatusToPublishedForGameWithId(@PathVariable Long id) {
+    public ResponseEntity<Object> setStatusToPublishedForGameWithId(@PathVariable Long id) {
         if (id < 1) {
             return new ResponseEntity<>(String.format(GAME_ID_GREATER_THEN_0, id), HttpStatus.BAD_REQUEST);
         }
@@ -123,12 +123,12 @@ public class GameController {
     }
 
     @DeleteMapping("/internal/game/{id}")
-    public ResponseEntity<?> deleteGame(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteGame(@PathVariable Long id) {
         gameService.deleteGameById(id);
         return ResponseEntity.noContent().build();
     }
 
-    private ResponseEntity<?> getValidationErrors(BindingResult bindingResult) {
+    private ResponseEntity<Object> getValidationErrors(BindingResult bindingResult) {
             List<String> errors = bindingResult.getFieldErrors().stream()
                     .map(error -> error.getField() + ": " + error.getDefaultMessage())
                     .toList();
