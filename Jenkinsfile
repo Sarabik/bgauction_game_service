@@ -1,7 +1,11 @@
 pipeline {
   agent any
   tools { jdk 'JDK-17' }
-  options { ansiColor('xterm'); timestamps() }
+  options {
+      skipDefaultCheckout(true)
+      timestamps()
+      ansiColor('xterm')
+    }
   environment {
     SONARQUBE_SERVER = 'SonarQube'
   }
