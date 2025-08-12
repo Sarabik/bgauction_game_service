@@ -1,5 +1,11 @@
 pipeline {
-  agent any
+  agent {
+      docker {
+        image 'gradle:8.10.2-jdk17'
+        args '--network=ci'
+        reuseNode true
+      }
+    }
   options { ansiColor('xterm'); timestamps() }
   environment {
     SONARQUBE_SERVER = 'SonarQube'
@@ -24,7 +30,7 @@ pipeline {
     stage('SonarQube Analysis') {
       steps {
         withSonarQubeEnv("${SONARQUBE_SERVER}") {
-          sh './gradlew sonar'
+          sh './gradlew sonar -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_AUTH_TOKEN'
         }
       }
     }
