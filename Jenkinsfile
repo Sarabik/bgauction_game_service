@@ -1,11 +1,6 @@
 pipeline {
-  agent {
-      docker {
-        image 'gradle:8.10.2-jdk17'
-        args '--network=ci'
-        reuseNode true
-      }
-    }
+  agent any
+  tools { jdk 'JDK-17' }
   options { ansiColor('xterm'); timestamps() }
   environment {
     SONARQUBE_SERVER = 'SonarQube'
